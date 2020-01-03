@@ -48,6 +48,42 @@ func TestResize(t *testing.T) {
 	}
 }
 
+func TestResizeToFitLongSide(t *testing.T) {
+	s := newStorageService(t)
+
+	ctx := context.Background()
+
+	cases := []struct {
+		name            string
+		srcObject       string
+		dstObject       string
+		wantContentType string
+		dstSize         int
+		dstContentType  imaging.Format
+	}{
+		{"png", "shingo_nouhau.png", "shingo_nouhau_300.png", "image/png", 300, imaging.PNG},
+		{"jpeg", "shingo.jpg", "shingo_300.jpg", "image/jpeg", 300, imaging.JPEG},
+	}
+
+	for _, tt := range cases {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			src, ct, err := s.Read(ctx, "sinmetal", tt.srcObject)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if e, g := tt.wantContentType, ct; e != g {
+				t.Errorf("Content Type want %v got %v", e, g)
+			}
+
+			dst := ResizeToFitLongSide(src, tt.dstSize)
+			if err := s.Write(ctx, dst, tt.dstContentType, "sinmetal", tt.dstObject); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
 func newStorageService(t *testing.T) *StorageService {
 	ctx := context.Background()
 
