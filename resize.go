@@ -11,3 +11,12 @@ import (
 func Resize(src image.Image, width, height int) *image.NRGBA {
 	return imaging.Resize(src, width, height, imaging.Lanczos)
 }
+
+// ResizeToFitLongSide is 長辺が指定したサイズになるようにアスペクト比を維持してリサイズする
+func ResizeToFitLongSide(src image.Image, size int) *image.NRGBA {
+	if src.Bounds().Size().X > src.Bounds().Size().Y {
+		return imaging.Resize(src, size, 0, imaging.Lanczos)
+	} else {
+		return imaging.Resize(src, 0, size, imaging.Lanczos)
+	}
+}
