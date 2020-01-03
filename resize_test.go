@@ -14,19 +14,21 @@ func TestResize(t *testing.T) {
 	ctx := context.Background()
 
 	cases := []struct {
-		name            string
-		srcObject       string
-		dstObject       string
-		wantContentType string
-		dstWidth        int
-		dstHeight       int
-		dstContentType  imaging.Format
+		name                   string
+		srcObject              string
+		dstObject              string
+		wantContentType        string
+		dstWidth               int
+		dstHeight              int
+		dstContentType         imaging.Format
+		withStorageWriteOption []WithStorageWriteOption
 	}{
-		{"png", "shingo_nouhau.png", "shingo_nouhau_600.png", "image/png", 600, 0, imaging.PNG},
-		{"png2", "sinmetal-merpay.png", "sinmetal-merpay_600.png", "image/png", 600, 0, imaging.PNG},
-		{"jpeg", "shingo.jpg", "shingo_600.jpg", "image/jpeg", 600, 0, imaging.JPEG},
-		{"no-change-size", "sinmetal.jpg", "sinmetal_640.jpg", "image/jpeg", 640, 0, imaging.JPEG},
-		{"mini-to-mini", "sinmetal.jpg", "sinmetal_320.jpg", "image/jpeg", 320, 0, imaging.JPEG},
+		{"png", "shingo_nouhau.png", "shingo_nouhau_600.png", "image/png", 600, 0, imaging.PNG, []WithStorageWriteOption{WithMaxAge(600)}},
+		{"png2", "sinmetal-merpay.png", "sinmetal-merpay_600.png", "image/png", 600, 0, imaging.PNG, []WithStorageWriteOption{WithMaxAge(600)}},
+		{"jpeg", "shingo.jpg", "shingo_600.jpg", "image/jpeg", 600, 0, imaging.JPEG, []WithStorageWriteOption{WithMaxAge(600)}},
+		{"no-change-size", "sinmetal.jpg", "sinmetal_640.jpg", "image/jpeg", 640, 0, imaging.JPEG, []WithStorageWriteOption{WithMaxAge(600)}},
+		{"mini-to-mini", "sinmetal.jpg", "sinmetal_320.jpg", "image/jpeg", 320, 0, imaging.JPEG, []WithStorageWriteOption{WithMaxAge(600)}},
+		{"no-cache", "sinmetal.jpg", "sinmetal_no_cache.jpg", "image/jpeg", 320, 0, imaging.JPEG, []WithStorageWriteOption{}},
 	}
 
 	for _, tt := range cases {
@@ -41,7 +43,10 @@ func TestResize(t *testing.T) {
 			}
 
 			dst := Resize(src, tt.dstWidth, tt.dstHeight)
-			if err := s.Write(ctx, dst, tt.dstContentType, "sinmetal", tt.dstObject); err != nil {
+			if err := s.Write(ctx, dst, tt.dstContentType, "sinmetal", tt.dstObject, tt.withStorageWriteOption...); err != nil {
+				t.Fatal(err)
+			}
+			if err := s.AddObjectACL(ctx, "sinmetal", tt.dstObject, storage.AllUsers, storage.RoleReader); err != nil {
 				t.Fatal(err)
 			}
 		})
