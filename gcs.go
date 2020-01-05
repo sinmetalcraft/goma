@@ -26,15 +26,15 @@ func WithMaxAge(age int) WithStorageWriteOption {
 	}
 }
 
-func (s *StorageService) Read(ctx context.Context, bucket string, object string) (image.Image, string, error) {
+func (s *StorageService) Read(ctx context.Context, bucket string, object string) (image.Image, *GomaType, error) {
 	attrs, err := s.gcs.Bucket(bucket).Object(object).Attrs(ctx)
 	if err != nil {
-		return nil, "", err
+		return nil, nil, err
 	}
 
 	r, err := s.gcs.Bucket(bucket).Object(object).NewReader(ctx)
 	if err != nil {
-		return nil, "", err
+		return nil, nil, err
 	}
 	defer func() {
 		if err := r.Close(); err != nil {
@@ -43,13 +43,24 @@ func (s *StorageService) Read(ctx context.Context, bucket string, object string)
 	}()
 	dst, err := imaging.Decode(r)
 	if err != nil {
-		return nil, "", err
+		return nil, nil, err
 	}
 
-	return dst, attrs.ContentType, nil
+	var ft FormatType
+	switch attrs.ContentType {
+	case "image/png":
+		ft = PNG
+	case "image/jpeg":
+		ft = JPEG
+	}
+
+	return dst, &GomaType{
+		ContentType: attrs.ContentType,
+		FormatType:  ft,
+	}, nil
 }
 
-func (s *StorageService) Write(ctx context.Context, img *image.NRGBA, format imaging.Format, bucket string, object string, ops ...WithStorageWriteOption) (rerr error) {
+func (s *StorageService) Write(ctx context.Context, img image.Image, ft FormatType, bucket string, object string, ops ...WithStorageWriteOption) (rerr error) {
 	oh := s.gcs.Bucket(bucket).Object(object)
 	w := oh.NewWriter(ctx)
 	defer func() {
@@ -67,7 +78,7 @@ func (s *StorageService) Write(ctx context.Context, img *image.NRGBA, format ima
 		}
 	}
 
-	if err := imaging.Encode(w, img, format); err != nil {
+	if err := imaging.Encode(w, img, ft.ImagingFormat()); err != nil {
 		return err
 	}
 
