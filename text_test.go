@@ -15,7 +15,7 @@ func TestTextService_DrawCMYK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	emoji, err := LoadFont("./assets/NotoSerifCJKjp-hinted/NotoColorEmoji.ttf", 10)
+	emoji, err := LoadFont("./assets/NotoEmoji-Regular.ttf", 10)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -23,7 +23,7 @@ func TestTextService_DrawCMYK(t *testing.T) {
 	ts := NewTextService(ctx, base, emoji)
 
 	dst := image.NewCMYK(image.Rect(0, 0, 200, 200))
-	ts.DrawCMYK(dst, 1.5, 500, image.Black, "Hello World", 10, 10)
+	ts.DrawCMYK(dst, 1.5, 100, image.Black, "HelloWorld", 0, 0)
 
 	file, err := os.Create("./test/test.png")
 	if err != nil {
