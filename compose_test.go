@@ -2,30 +2,23 @@ package goma
 
 import (
 	"context"
+	"image"
 	"testing"
 )
 
 func TestComposeCMYK(t *testing.T) {
 	s := newStorageService(t)
 
-	background, err := Open("./assets/background.png", PNG)
-	if err != nil {
-		t.Fatalf("failed background image open. err=%+v", err)
-	}
-
-	red, err := Open("./assets/red.png", PNG)
-	if err != nil {
-		t.Fatalf("failed red image open. err=%+v", err)
-	}
+	tis := openTestImages(t)
 
 	var reqs []*ComposeImageRequest
 	reqs = append(reqs, &ComposeImageRequest{
-		img: background,
+		img: tis.Background,
 		x:   0,
 		y:   0,
 	})
 	reqs = append(reqs, &ComposeImageRequest{
-		img: red,
+		img: tis.Red,
 		x:   100,
 		y:   100,
 	})
@@ -41,24 +34,16 @@ func TestComposeCMYK(t *testing.T) {
 func TestComposeRGBA(t *testing.T) {
 	s := newStorageService(t)
 
-	background, err := Open("./assets/background.png", PNG)
-	if err != nil {
-		t.Fatalf("failed background image open. err=%+v", err)
-	}
-
-	red, err := Open("./assets/red.png", PNG)
-	if err != nil {
-		t.Fatalf("failed red image open. err=%+v", err)
-	}
+	tis := openTestImages(t)
 
 	var reqs []*ComposeImageRequest
 	reqs = append(reqs, &ComposeImageRequest{
-		img: background,
+		img: tis.Background,
 		x:   0,
 		y:   0,
 	})
 	reqs = append(reqs, &ComposeImageRequest{
-		img: red,
+		img: tis.Red,
 		x:   100,
 		y:   100,
 	})
@@ -68,5 +53,27 @@ func TestComposeRGBA(t *testing.T) {
 	img := ComposeRGBA(640, 480, reqs)
 	if err := s.Write(ctx, img, PNG, "sinmetal", "compose-rgba.png", opts...); err != nil {
 		t.Fatal(err)
+	}
+}
+
+type TestImages struct {
+	Background image.Image
+	Red        image.Image
+}
+
+func openTestImages(t *testing.T) *TestImages {
+	background, err := Open("./assets/background.png")
+	if err != nil {
+		t.Fatalf("failed background image open. err=%+v", err)
+	}
+
+	red, err := Open("./assets/red.png")
+	if err != nil {
+		t.Fatalf("failed red image open. err=%+v", err)
+	}
+
+	return &TestImages{
+		Background: background,
+		Red:        red,
 	}
 }
