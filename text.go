@@ -3,6 +3,7 @@ package goma
 import (
 	"context"
 	"image"
+	"image/draw"
 	"io/ioutil"
 
 	"github.com/golang/freetype/truetype"
@@ -13,7 +14,7 @@ import (
 
 type TextService struct {
 	BaseFont  font.Face
-	EmojiFont font.Face
+	EmojiFont font.Face // カラー絵文字には対応してないので、今のところ使ってない https://github.com/tenntenn/nigari/issues/1
 }
 
 func NewTextService(ctx context.Context, baseFont font.Face, emojiFont font.Face) *TextService {
@@ -23,7 +24,7 @@ func NewTextService(ctx context.Context, baseFont font.Face, emojiFont font.Face
 	}
 }
 
-func (s *TextService) DrawCMYK(dst *image.CMYK, spacing float64, width fixed.Int26_6, fg image.Image, text string, x int, y int) {
+func (s *TextService) Draw(dst draw.Image, spacing float64, width fixed.Int26_6, fg image.Image, text string, x int, y int) {
 	d := &nigari.Drawer{
 		Base:    s.BaseFont,
 		Emoji:   s.EmojiFont,
