@@ -3,14 +3,15 @@ package goma
 import (
 	"context"
 	"image"
-	"image/png"
+	"image/draw"
 	"os"
 	"testing"
 
+	"github.com/disintegration/imaging"
 	"golang.org/x/image/math/fixed"
 )
 
-func TestTextService_DrawCMYK(t *testing.T) {
+func TestTextService_Draw(t *testing.T) {
 	ctx := context.Background()
 
 	base, err := LoadFont("./assets/AozoraMinchoRegular.ttf", 10)
@@ -21,17 +22,17 @@ func TestTextService_DrawCMYK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	tis := openTestImages(t)
 
 	ts := NewTextService(ctx, base, emoji)
 
-	dst := image.NewCMYK(image.Rect(0, 0, 300, 300))
-	ts.DrawCMYK(dst, 1.5, fixed.I(270), image.Black, "Hello 絵文字じゃない文字列たち。突然の絵文字が襲いかかる。🍣🍺。", 10, 25)
-
+	dst := tis.Background.(draw.Image)
+	ts.Draw(dst, 1.5, fixed.I(270), image.Black, "Hello 絵文字じゃない文字列たち。突然の絵文字が襲いかかる。🍣🍺。", 10, 25)
 	file, err := os.Create("./test/test.png")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := png.Encode(file, dst); err != nil {
+	if err := imaging.Encode(file, dst, imaging.PNG); err != nil {
 		t.Fatal(err)
 	}
 }
