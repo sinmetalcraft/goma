@@ -6,31 +6,6 @@ import (
 	"testing"
 )
 
-func TestComposeCMYK(t *testing.T) {
-	s := newStorageService(t)
-
-	tis := openTestImages(t)
-
-	var reqs []*ComposeImageRequest
-	reqs = append(reqs, &ComposeImageRequest{
-		img: tis.Background,
-		x:   0,
-		y:   0,
-	})
-	reqs = append(reqs, &ComposeImageRequest{
-		img: tis.Red,
-		x:   100,
-		y:   100,
-	})
-
-	opts := []WithStorageWriteOption{WithMaxAge(600)}
-	ctx := context.Background()
-	img := ComposeCMYK(640, 480, reqs)
-	if err := s.Write(ctx, img, PNG, "sinmetal", "compose-cmyk.png", opts...); err != nil {
-		t.Fatal(err)
-	}
-}
-
 func TestComposeRGBA(t *testing.T) {
 	s := newStorageService(t)
 
@@ -52,6 +27,31 @@ func TestComposeRGBA(t *testing.T) {
 	ctx := context.Background()
 	img := ComposeRGBA(640, 480, reqs)
 	if err := s.Write(ctx, img, PNG, "sinmetal", "compose-rgba.png", opts...); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestComposeCMYK(t *testing.T) {
+	s := newStorageService(t)
+
+	tis := openTestImages(t)
+
+	var reqs []*ComposeImageRequest
+	reqs = append(reqs, &ComposeImageRequest{
+		img: tis.Background,
+		x:   0,
+		y:   0,
+	})
+	reqs = append(reqs, &ComposeImageRequest{
+		img: tis.Red,
+		x:   100,
+		y:   100,
+	})
+
+	opts := []WithStorageWriteOption{WithMaxAge(600)}
+	ctx := context.Background()
+	img := ComposeCMYK(640, 480, reqs)
+	if err := s.Write(ctx, img, PNG, "sinmetal", "compose-cmyk.png", opts...); err != nil {
 		t.Fatal(err)
 	}
 }
